@@ -4,8 +4,7 @@
 //
 // File    : usconfig.js
 // Author  : h1mesuke <himesuke@gmail.com>
-// Updated : 2010-12-09
-// Version : 1.1.2
+// Version : 1.2.1
 //
 // == Description
 //
@@ -37,6 +36,7 @@
 //
 //============================================================================
 
+
 var Config = {
   // Dialog instances
   dialogs: {},
@@ -53,16 +53,11 @@ var Config = {
   open: function(name) { Config._open(name) },
 
   _open: function(name) {
-    var dlg = this._getDialog(name);
-    dlg.build();
-    dlg.show();
-  },
-
-  _getDialog: function(name) {
     name = (name || this.__first_defined__);
     var dlg = this.dialogs[name];
     if (!dlg) throw "\nUSCONFIG: ERROR: DIALOG NOT DEFINED for \"" + name + "\"\n";
-    return dlg;
+    dlg.build();
+    dlg.show();
   },
 
   // Loads the settings associated with the dialog of the given name from the
@@ -71,20 +66,35 @@ var Config = {
   // loading, this function will return the defautls.
   //
   load: function(name) {
-    var dlg = this._getDialog(name);
-    return dlg.load();
+    name = (name || this.__first_defined__);
+    var dlg = this.dialogs[name];
+    if (!dlg) throw "\nUSCONFIG: ERROR: DIALOG NOT DEFINED for \"" + name + "\"\n";
+
+    var settings = {};
+    dlg.dummyBuild();
+    dlg.load();
+    for (var key in dlg.defaults) settings[key] = dlg.defaults[key];
+    for (var key in dlg.settings) settings[key] = dlg.settings[key];
+
+    Config.debug && GM_log("\nUSCONFIG: DEBUG: SETTINGS LOADED for \"" + name + "\"\n" +
+      settings.toSource());
+
+    return settings;
   },
 
   // Saves the settings associated with the dialog of the given name to the
   // local storage.
   //
   save: function(settings, name) {
-    var dlg = this._getDialog(name);
-    dlg.save(settings);
+    name = (name || this.__first_defined__);
+    var dlg = this.dialogs[name];
+    if (!dlg) throw "\nUSCONFIG: ERROR: DIALOG NOT DEFINED for \"" + name + "\"\n";
+    dlg.settings = settings;
+    dlg.save();
   },
 
   center: function(frame) {
-    frame = (frame || this.getFrame());
+    frame = (frame || this._frame());
     if (!frame) return;
     var style = frame.style;
     style.top  = Math.floor((window.innerHeight - frame.offsetHeight) / 2) + 'px';
@@ -92,7 +102,7 @@ var Config = {
   },
 
   remove: function(frame) {
-    frame = (frame || this.getFrame(true));
+    frame = (frame || this._frame(true));
     if (!frame) return;
     frame.style.display = 'none';
     frame.parentNode.removeChild(frame);
@@ -100,9 +110,9 @@ var Config = {
     frame = null;
   },
 
-  getFrame: function(gmcAware) {
+  _frame: function(gmc) {
     var test = "@id='usconfig_frame'";
-    if (gmcAware) test += " or @id='GM_config'";
+    if (gmc) test += " or @id='GM_config'";
     return document.evaluate("//iframe[" + test + "]",
       document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   },
@@ -128,19 +138,19 @@ Config.locale = {
   translations: {
 
     en: {
-      'Save'           : 'Save',
-      'Cancel'         : 'Cancel',
-      'Reset'          : 'Reset to defaults',
-      'require_integer': '"${label}" must be an integer.',
-      'require_number' : '"${label}" must be a number.',
+      'Save'            : 'Save',
+      'Cancel'          : 'Cancel',
+      'Reset'           : 'Reset to defaults',
+      'require_integer' : '"${label}" must be an integer.',
+      'require_number'  : '"${label}" must be a number.',
     },
 
     ja: {
-      'Save'           : "保存",
-      'Cancel'         : "キャンセル",
-      'Reset'          : "デフォルトに戻す",
-      'require_integer': "「${label}」には整数を設定して下さい。",
-      'require_number' : "「${label}」には数値を設定して下さい。",
+      'Save'            : "保存",
+      'Cancel'          : "キャンセル",
+      'Reset'           : "デフォルトに戻す",
+      'require_integer' : "「${label}」には整数を設定して下さい。",
+      'require_number'  : "「${label}」には数値を設定して下さい。",
     },
   },
 
@@ -171,71 +181,50 @@ Config.Dialog = function(name, buildFunc, opts) {
   delete opts.saveKey;
   this.callbacks = opts;
 
-  this._initDefaults();
-  this.settings = null;
-  this.frame    = null;
+  this.defaults = {};
+  this.settings = {};
+  this.frame = null;
 };
 
 var dp = Config.Dialog.prototype;
 
 dp.build = function() {
+  // clear the defautls every time to detect config id collisions
+  this.defaults = {};
   this.load();
-  // build the dialog' frame
   this.builder = new Config.Builder(this);
   this._build();
 };
 
-dp._initDefaults = function() {
+dp.dummyBuild = function() {
+  // clear the defautls every time to detect config id collisions
   this.defaults = {};
-  // initialize this.defaults
-  this.builder = new Config.DefaultsBuilder(this);
+  this.builder = new Config.DummyBuilder(this);
   this._build();
 };
 
 dp.load = function() {
-  var savedInJSON = false;
-  var userSettings;
   var data = GM_getValue(this.saveKey, '{}');
   try {
-    userSettings = JSON.parse(data);
-    savedInJSON = true;
+    this.settings = JSON.parse(data);
   } catch(e) {
-    userSettings = (new Function("return (" + data + ")"))();
-  }
-  // merge
-  this.settings = {};
-  for (var key in this.defaults) {
-    this.settings[key] = this.defaults[key];
-  }
-  for (var key in userSettings) {
-    this.settings[key] = userSettings[key];
-  }
-
-  if (!savedInJSON) {
-    // try to re-save in JSON immediately
+    this.settings = (new Function("return (" + data + ")"))();
     JSON && JSON.stringify && this.save();
   }
-  Config.debug && GM_log("\nUSCONFIG: DEBUG: SETTINGS LOADED for \"" + name + "\"\n" +
-    this.settings.toSource());
-
-  return this.settings;
 };
 
-dp.save = function(settings) {
-  if (typeof settings == 'object') {
-    this.settings = settings;
-  }
+dp.save = function() {
   var data = (JSON && JSON.stringify) ? JSON.stringify(this.settings) : this.settings.toSource();
   GM_setValue(this.saveKey, data);
 
   Config.debug && GM_log("\nUSCONFIG: DEBUG: SETTINGS SAVED for \"" + this.name +
-    "\" with SAVEKEY \"" + this.saveKey + "\n" + data);
+    "\" with SAVEKEY \"" + this.saveKey + "\n" + this.settings.toSource());
 };
 
 dp.show = function() {
   if (!this.frame) return;
   this.frame.addEventListener('load', this._show, false);
-  this.frame.src = "about:blank"; // fire!
+  this.frame.src = "about:blank"; // fire
 };
 
 dp.center = function() {
@@ -379,7 +368,7 @@ var bp = Config.Builder.prototype;
 //
 bp.dialog = function(title /* , [attrs,] sections... */) {
   // exclusive control
-  var frame = Config.getFrame(true);
+  var frame = Config._frame(true);
   if (frame) {
     var style = frame.style;
     if (style.display == 'none' || style.opacity == '0') {
@@ -394,12 +383,12 @@ bp.dialog = function(title /* , [attrs,] sections... */) {
   var _ = Config._;
   var args = this._parse(arguments, 1);
   var attrs = {
-    width : '75%',
-    height: '75%',
-    theme : 'default',
-    gap   : 12,
-    style : '',
-    autoReload: true,
+    width      : '75%',
+    height     : '75%',
+    theme      : 'default',
+    gap        : 12,
+    style      : '',
+    autoReload : true,
   };
   this._merge(attrs, args.attrs);
   if (/\d+$/.test(attrs.width )) attrs.width  += 'px';
@@ -411,8 +400,8 @@ bp.dialog = function(title /* , [attrs,] sections... */) {
 
   // create the dialog frame
   frame = this._dialog.frame = this._create('iframe', {
-    id   : 'usconfig_frame',
-    style: 'width: ' + attrs.width + '; height: ' + attrs.height + '; ' +
+    id    : 'usconfig_frame',
+    style : 'width: ' + attrs.width + '; height: ' + attrs.height + '; ' +
       'max-width: 95%; max-height: 95%; display: none; opacity: 0; ' +
       'position: fixed; left: 0; top: 0; z-index: 9999; ' +
       'border: 4px solid #999999; background: ' + attrs.theme.bg_color + '; overflow: auto;',
@@ -422,19 +411,19 @@ bp.dialog = function(title /* , [attrs,] sections... */) {
   // will be ignored because the contentDocument of the frame hasn't created yet.
 
   var style = this._create('style', {
-    type : 'text/css',
-    inner: attrs.style,
+    type  : 'text/css',
+    inner : attrs.style,
   });
 
   // create the dialog container
   var dcon = this._create('div', {
-    klass: 'dialog_container',
-    id   : this._dialog.name + '_config_dialog',
+    klass : 'dialog_container',
+    id    : this._dialog.name + '_config_dialog',
   });
   // append the dialog's title
   dcon.appendChild(this._create('div', {
-    klass: 'dialog_title',
-    inner: title,
+    klass : 'dialog_title',
+    inner : title,
   }));
 
   // append sections
@@ -448,26 +437,26 @@ bp.dialog = function(title /* , [attrs,] sections... */) {
   var btns = this._create('div', { klass: 'button_bar' });
   // reset button
   btns.appendChild(this._create('button', {
-    type : 'button',
-    klass: 'dialog_button',
-    id   : 'reset_button',
-    inner: _('Reset'),
-    onclick: function() { dlg.reset(); },
+    type  : 'button',
+    klass : 'dialog_button',
+    id    : 'reset_button',
+    inner : _('Reset'),
+    click : function() { dlg.reset(); },
   }));
   // save/cancel buttons
   var saveBtn = this._create('button', {
-    type : 'button',
-    klass: 'dialog_button',
-    id   : 'save_button',
-    inner: _('Save'),
-    onclick: function() { dlg.close(true); },
+    type  : 'button',
+    klass : 'dialog_button',
+    id    : 'save_button',
+    inner : _('Save'),
+    click : function() { dlg.close(true); },
   });
   var cancelBtn = this._create('button', {
-    type : 'button',
-    klass: 'dialog_button',
-    id   : 'cancel_button',
-    inner: _('Cancel'),
-    onclick: function() { dlg.close(false); },
+    type  : 'button',
+    klass : 'dialog_button',
+    id    : 'cancel_button',
+    inner : _('Cancel'),
+    click : function() { dlg.close(false); },
   });
   if (/Win/.test(navigator.platform)) {
     // Windows
@@ -491,6 +480,7 @@ bp.dialog = function(title /* , [attrs,] sections... */) {
     head.appendChild(style);
     body.style.margin  = '0';
     body.style.padding = '0';
+    body.style.backgroundColor = "#ffffff";
     body.appendChild(dcon);
     // now the dialog is ready to show
 
@@ -515,16 +505,16 @@ bp.section = function(title /*, [desc,] grids... */) {
   var sect = this._create('div', { klass : 'section' });
   // append the section title
   var sect_title = this._create('div', {
-    klass: 'section_title',
-    inner: title,
+    klass : 'section_title',
+    inner : title,
   });
   sect.appendChild(sect_title);
   // append the section desc
   if (desc && /\S/.test(desc)) {
     var sect_desc = this._create('div', { klass: 'section_desc' });
     sect_desc.appendChild(this._create('p', {
-      style: 'margin: 0px; padding: 0px',
-      inner: desc,
+      style : 'margin: 0px; padding: 0px',
+      inner : desc,
     }));
     sect.appendChild(sect_desc);
   }
@@ -547,8 +537,8 @@ bp.grid = function(/* [attrs,] fields... */) {
   var elems = args.elems;
 
   var gcon = this._create('div', {
-    klass: 'grid_container',
-    style: 'text-align: ' + align + ';',
+    klass : 'grid_container',
+    style : 'text-align: ' + align + ';'
   });
 
   this._merge(attrs, { klass: 'grid' });
@@ -617,11 +607,11 @@ bp.button = function(label, id /* , [attrs,] onclick, [tooltip] */) {
   if (args.str)  attrs.title = args.str;
 
   this._merge(attrs, {
-    type : 'button',
-    klass: 'button',
-    id   : 'button_' + id,
-    name : id,
-    inner: label,
+    type  : 'button',
+    klass : 'button',
+    id    : 'button_' + id,
+    name  : id,
+    inner : label,
   });
   var btn = this._create('button', attrs);
   return this._cells(btn);
@@ -630,18 +620,19 @@ bp.button = function(label, id /* , [attrs,] onclick, [tooltip] */) {
 // Creates a checkbox.
 //
 bp.checkbox = function(label, id, _default /* , [attrs,] [tooltip] */) {
+  this._setDefault(id, _default);
   var args = this._parse(arguments, 3);
   var attrs = args.attrs;
   if (args.str) attrs.title = args.str;
   var labelPos = this._pop(attrs, 'label', 'right');
 
   this._merge(attrs, {
-    type : 'checkbox',
-    klass: 'control',
-    id   : 'control_' + id,
-    name : id,
-    value: id,
-    checked: this._getValue(id),
+    type  : 'checkbox',
+    klass : 'control',
+    id    : 'control_' + id,
+    name  : id,
+    value : id,
+    check : this._getValue(id, _default),
   });
   var cbox = this._create('input', attrs);
   label = this._label(id, label);
@@ -657,6 +648,7 @@ bp.checkbox = function(label, id, _default /* , [attrs,] [tooltip] */) {
 // mutually exclusive.
 //
 bp.radio = function(label, id, options, _default /* , [attrs,] [tooltip] */) {
+  this._setDefault(id, _default);
   var args = this._parse(arguments, 4);
   var attrs = args.attrs;
   if (args.str) attrs.title = args.str;
@@ -669,7 +661,7 @@ bp.radio = function(label, id, options, _default /* , [attrs,] [tooltip] */) {
   label = this._label(id, label);
 
   // append radios for each of options
-  var value = this._getValue(id);
+  var value = this._getValue(id, _default);
   if (value == _default && options.indexOf(_default) == -1) {
     GM_log("\nUSCONFIG: WARNING: INVALID DEFAULT VALUE for \"" + id + "\"");
     value = options[0]; // fallback
@@ -677,12 +669,12 @@ bp.radio = function(label, id, options, _default /* , [attrs,] [tooltip] */) {
   for (var i = 0; i < options.length; i++) {
     box.appendChild(this._create('span',  { inner: options[i] }));
     box.appendChild(this._create('input', {
-      type : 'radio',
-      klass: 'radio_' + id,
-      id   : 'radio_' + id + '_' + (i + 1),
-      name : id,
-      value: options[i],
-      checked: options[i] == value,
+      type  : 'radio',
+      klass : 'radio_' + id,
+      id    : 'radio_' + id + '_' + (i + 1),
+      name  : id,
+      value : options[i],
+      check : options[i] == value,
     }));
   }
   return this._cells(label, box);
@@ -691,31 +683,32 @@ bp.radio = function(label, id, options, _default /* , [attrs,] [tooltip] */) {
 // Creates a select control.
 //
 bp.select = function(label, id, options, _default /* , [attrs,] [tooltip] */) {
+  this._setDefault(id, _default);
   var args = this._parse(arguments, 4);
   var attrs = args.attrs;
   if (args.str) attrs.title = args.str;
 
   this._merge(attrs, {
-    klass: 'control',
-    id   : 'control_' + id,
-    name : id,
+    klass : 'control',
+    id    : 'control_' + id,
+    name  : id,
   });
   delete attrs.multiple; // not support
   var slct = this._create('select', attrs);
   label = this._label(id, label);
 
   // append options
-  var value = this._getValue(id);
+  var value = this._getValue(id, _default);
   if (value == _default && options.indexOf(_default) == -1) {
     GM_log("\nUSCONFIG: WARNING: INVALID DEFAULT VALUE for \"" + id + "\"");
     value = options[0]; // fallback
   }
   for (var i = 0; i < options.length; i++) {
     slct.appendChild(this._create('option', {
-      klass: 'option_' + id,
-      id   : 'option_' + id + '_' + (i + 1),
-      text : options[i],
-      selected: options[i] == value,
+      klass  : 'option_' + id,
+      id     : 'option_' + id + '_' + (i + 1),
+      text   : options[i],
+      select : options[i] == value,
     }));
   }
   return this._cells(label, slct);
@@ -734,6 +727,7 @@ bp.text = function(label, id, _default /* , [attrs,] [tooltip,] [validateFunc] *
 };
 
 bp._text = function(label, id, _default /* , [attrs,] [tooltip,] [validateFunc] */) {
+  this._setDefault(id, _default);
   var args = this._parse(arguments, 3);
   var attrs = { size: 6 };
   this._merge(attrs, args.attrs);
@@ -742,11 +736,11 @@ bp._text = function(label, id, _default /* , [attrs,] [tooltip,] [validateFunc] 
   if (args.func) this._dialog.callbacks['validate_' + id] = args.func;
 
   this._merge(attrs, {
-    type : 'text',
-    klass: 'control',
-    id   : 'control_' + id,
-    name : id,
-    value: this._getValue(id),
+    type  : 'text',
+    klass : 'control',
+    id    : 'control_' + id,
+    name  : id,
+    value : this._getValue(id, _default),
   });
   var text = this._create('input', attrs);
   label = this._label(id, label);
@@ -785,6 +779,7 @@ bp.number = function(label, id, _default /* , [attrs,] [tooltip,] [validateFunc]
 // Creates a textarea.
 //
 bp.textarea = function(label, id, _default /* , [attrs,] [tooltip,] [validateFunc] */) {
+  this._setDefault(id, _default);
   var args = this._parse(arguments, 3);
   var attrs = { cols: 8, rows: 4 };
   this._merge(attrs, args.attrs);
@@ -794,10 +789,10 @@ bp.textarea = function(label, id, _default /* , [attrs,] [tooltip,] [validateFun
     (args.func || Config.Builder.validator.forString(label));
 
   this._merge(attrs, {
-    klass: 'control',
-    id   : 'control_' + id,
-    name : id,
-    value: this._getValue(id),
+    klass : 'control',
+    id    : 'control_' + id,
+    name  : id,
+    value : this._getValue(id, _default),
   });
   var text  = this._create('textarea', attrs);
   label = this._label(id, label);
@@ -822,10 +817,10 @@ bp.textarea = function(label, id, _default /* , [attrs,] [tooltip,] [validateFun
 bp._label = function(id, text) {
   if (text) {
     var attrs = {
-      klass: 'label',
-      id   : 'label_' + id,
-      for  : 'control_' + id,
-      inner: text,
+      klass : 'label',
+      id    : 'label_' + id,
+      for   : 'control_' + id,
+      inner : text,
     };
     return this._create('label', attrs);
   } else {
@@ -879,12 +874,12 @@ bp._setAttrs = function(elem, attrs) {
       case "for": case "href": case "id": case "name": case "src": case "style":
         elem.setAttribute(name, value);
         break;
-      case "checked" : elem.checked     = value; break;
-      case "klass"   : elem.className   = value; break;
-      case "inner"   : elem.innerHTML   = value; break;
-      case "selected": elem.selected    = value; break;
-      case "text"    : elem.textContent = value; break;
-      case "onclick" : elem.addEventListener("click", value, false); break;
+      case "check" : elem.checked     = value; break;
+      case "inner" : elem.innerHTML   = value; break;
+      case "klass" : elem.className   = value; break;
+      case "select": elem.selected    = value; break;
+      case "text"  : elem.textContent = value; break;
+      case "click" : elem.addEventListener("click", value, false); break;
       default:
         elem[name] = value;
         break;
@@ -894,8 +889,17 @@ bp._setAttrs = function(elem, attrs) {
   return elem;
 };
 
-bp._getValue = function(id) {
-  return this._dialog.settings[id];
+bp._setDefault = function(id, _default) {
+  var defaults = this._dialog.defaults;
+  if (typeof defaults[id] != 'undefined') {
+    throw "\nUSCONFIG: SYNTAX ERROR: CONFIG ID CONFLICTED at \"" + id + "\"\n";
+  }
+  defaults[id] = _default;
+};
+
+bp._getValue = function(id, _default) {
+  var value = this._dialog.settings[id];
+  return (typeof value == 'undefined') ? _default : value;
 };
 
 bp._parse = function(passedArgs, fromIdx) {
@@ -1000,24 +1004,24 @@ bp._theme = function(theme) {
     if (!theme) throw "\nUSCONFIG: ERROR: UNKNOWN THEME: " + name;
   }
   return {
-    bg_color                  : theme.bg_color                   || '#ffffff',
-    fg_color                  : theme.fg_color                   || '#000000',
-    title_border_width        : theme.title_border_width         || 0,
-    title_border_color        : theme.title_border_color         || theme.bg_color || '#ffffff',
-    title_bg_color            : theme.title_bg_color             || theme.bg_color || '#ffffff',
-    title_fg_color            : theme.title_fg_color             || '#ffffff',
-    section_title_border_width: theme.section_title_border_width || 1,
-    section_title_border_color: theme.section_title_border_color || '#aaaaaa',
-    section_title_bg_color    : theme.section_title_bg_color     || theme.main_color,
-    section_title_fg_color    : theme.section_title_fg_color     || '#ffffff',
-    section_desc_border_width : theme.section_desc_border_width  || 1,
-    section_desc_border_color : theme.section_desc_border_color  || '#cccccc',
-    section_desc_bg_color     : theme.section_desc_bg_color      || theme.sub_color,
-    section_desc_fg_color     : theme.section_desc_fg_color      || '#474747',
-    button_bar_border_width   : theme.button_bar_border_width    || 1,
-    button_bar_border_color   : theme.button_bar_border_color    || '#cccccc',
-    button_bar_bg_color       : theme.button_bar_bg_color        || theme.sub_color,
-    button_bar_fg_color       : theme.button_bar_fg_color        || theme.fg_color || '#000000',
+    bg_color                   : theme.bg_color                   || '#ffffff',
+    fg_color                   : theme.fg_color                   || '#000000',
+    title_border_width         : theme.title_border_width         || 0,
+    title_border_color         : theme.title_border_color         || theme.bg_color || '#ffffff',
+    title_bg_color             : theme.title_bg_color             || theme.bg_color || '#ffffff',
+    title_fg_color             : theme.title_fg_color             || '#ffffff',
+    section_title_border_width : theme.section_title_border_width || 1,
+    section_title_border_color : theme.section_title_border_color || '#aaaaaa',
+    section_title_bg_color     : theme.section_title_bg_color     || theme.main_color,
+    section_title_fg_color     : theme.section_title_fg_color     || '#ffffff',
+    section_desc_border_width  : theme.section_desc_border_width  || 1,
+    section_desc_border_color  : theme.section_desc_border_color  || '#cccccc',
+    section_desc_bg_color      : theme.section_desc_bg_color      || theme.sub_color,
+    section_desc_fg_color      : theme.section_desc_fg_color      || '#474747',
+    button_bar_border_width    : theme.button_bar_border_width    || 1,
+    button_bar_border_color    : theme.button_bar_border_color    || '#cccccc',
+    button_bar_bg_color        : theme.button_bar_bg_color        || theme.sub_color,
+    button_bar_fg_color        : theme.button_bar_fg_color        || theme.fg_color || '#000000',
   };
 };
 
@@ -1026,133 +1030,7 @@ bp._style = function(theme, gap) {
   this._merge(env, theme);
 
   // template
-  var css = <><![CDATA[
-
-    .dialog_container {
-      margin:  0px;
-      padding: 0px 0px <%gap*4%>px 0px;
-      background: <%bg_color%>; color: <%fg_color%>;
-    }
-    .dialog_container * {
-      font-family: arial,tahoma,myriad pro,sans-serif;
-    }
-    .dialog_title {
-      width: 100%;
-      margin: 0px; padding: 6px 0px;
-      border-width: 0px 0px <%title_border_width%>px 0px;
-      border-style: solid; border-color: <%title_border_color%>;
-      text-align: center;
-      font-size: 20pt;
-    }
-
-    .section {
-      width: 100%;
-      margin: 0px; padding: 0px 0px <%gap*2%>px 0px;
-    }
-    .section_title {
-      width: 100%;
-      margin: 0px; padding: 3px 0px;
-      border-width: <%section_title_border_width%>px 0px;
-      border-style: solid; border-color: <%section_title_border_color%>;
-      background: <%section_title_bg_color%>; color: <%section_title_fg_color%>;
-      text-align: center;
-      font-size: 13pt;
-    }
-    .section_desc {
-      width: 100%;
-      margin: 0px; padding: 3px 0px;
-      border-width: 0px 0px <%section_desc_border_width%>px 0px;
-      border-style: solid; border-color: <%section_desc_border_color%>;
-      background: <%section_desc_bg_color%>; color: <%section_desc_fg_color%>;
-      text-align: center;
-      font-size: 9pt;
-    }
-    .grid_container {
-      width: 100%;
-      margin: 0px; padding: 0px;
-    }
-    .grid {
-      display: inline-table;
-      border-collapse: collapse;
-      margin: <%gap%>px <%gap%>px 0px <%gap%>px;
-      position: relative; right: <%gap%>px;
-    }
-    .grid tr {
-      vertical-align: middle;
-    }
-    .grid td {
-      border: 0px; padding: <%gap/2%>px 0px 0px 0px;
-    }
-    .grid .grid {
-      margin: 0px; padding: 0px;
-      position: relative; right: 0px;
-    }
-
-    .button {
-      display: inline-block;
-      margin-left: <%gap%>px;
-    }
-    .label {
-      display: inline-block;
-      font-size: 9pt; font-weight: bold;
-    }
-    .label.top {
-      margin-top: 4px; margin-bottom: 4px;
-    }
-    .control {
-      display: inline-block;
-    }
-    div.control span {
-      margin: 0px  4px 0px <%gap%>px;
-      font-size: 10pt;
-    }
-    .manual input[type="checkbox"] {
-      position: relative; top: 2px;
-    }
-    input[type="radio"] {
-      margin: 0px; padding: 0px;
-    }
-    select {
-      margin: 0px 4px; padding: 0px;
-    }
-    input[type="text"], textarea  {
-      margin: 0px 0px 0px 4px; padding: 0px;
-      font-size: 10pt;
-    }
-    .static_text {
-      display: inline-block;
-      margin: 0px 4px !important;
-      font-size: 9pt;
-    }
-
-    .margin_left {
-      margin: 0px 4px 0px <%gap%>px;
-    }
-
-    .button_bar {
-      width: 100%;
-      margin: 0px; padding: <%gap%>px 0px;
-      border-width: <%button_bar_border_width%>px 0px 0px 0px;
-      border-style: solid; border-color: <%button_bar_border_color%>;
-      position: fixed; bottom: 0px; z-index: 999;
-      background: <%button_bar_bg_color%>; color: <%button_bar_fg_color%>;
-      text-align: right;
-      vertical-align: middle;
-    }
-    .dialog_button {
-      display: inline-block;
-      margin-right: <%gap%>px;
-    }
-    #save_button, #cancel_button {
-      min-width: 6em;
-    }
-    #reset_button {
-      float: left;
-      margin-left: <%gap%>px;
-      font-size: 9pt;
-    }
-  ]]></>.toString();
-
+  var css = GM_getResourceText('usconfigcss');
   with (env) {
     css = css.replace(/<%(.*?)%>/g, function(str, p1) {
       return eval(p1);
@@ -1164,45 +1042,26 @@ bp._style = function(theme, gap) {
 
 delete bp;
 
-//--------------------------------------
-// DefaultsBuilder
+//---------------------------------------------------------------------------
+// DummyBuilder
 
-// NOTE: DefaultsBuilder is a dummy builder to collect default values of
-// settings. Most of methods are fake and only set each control's default
-// value to this.defaults.
-
-Config.DefaultsBuilder = function(dlg) {
+Config.DummyBuilder = function(dlg) {
   this._dialog = dlg;
 };
 
-Config.DefaultsBuilder.prototype = new Config.Builder();
-Config.DefaultsBuilder.prototype.constructor = Config.DefaultsBuilder;
+Config.DummyBuilder.prototype = new Config.Builder();
+Config.DummyBuilder.prototype.constructor = Config.DummyBuilder;
 
-var dbp = Config.DefaultsBuilder.prototype;
+var dbp = Config.DummyBuilder.prototype;
 
 dbp.nop = function() {};
 dbp.dialog = dbp.section = dbp.grid = dbp.button = dbp.staticText = dbp.nop;
 
-dbp.checkbox = function(label, id, _default) {
-  this._checkID(id);
-  this._dialog.defaults[id] = _default;
-};
+dbp.checkbox = function(label, id, _default) { this._setDefault(id, _default); };
 dbp.text = dbp.integer = dbp.number = dbp.textarea = dbp.checkbox;
 
-dbp.radio = function(label, id, options, _default) {
-  this._checkID(id);
-  if (typeof _default == 'number' && 0 <= _default && _default < options.length) {
-    _default = options[_default | 0] // floor
-  }
-  this._dialog.defaults[id] = _default;
-};
+dbp.radio = function(label, id, options, _default) { this._setDefault(id, _default); };
 dbp.select = dbp.radio;
-
-dbp._checkID = function(id) {
-  if (typeof this._dialog.defaults[id] != 'undefined') {
-    throw "\nUSCONFIG: SYNTAX ERROR: CONFIG ID CONFLICTED at \"" + id + "\"\n";
-  }
-};
 
 delete dbp;
 
@@ -1210,14 +1069,14 @@ delete dbp;
 // Themes
 
 Config.Dialog.theme = {
-  default: { main_color: '#414141', sub_color: '#efefef' },
-  blue   : { main_color: '#3333cc', sub_color: '#9999ff' },
-  brown  : { main_color: '#990000', sub_color: '#cc6633' },
-  cyan   : { main_color: '#00cccc', sub_color: '#99cccc' },
-  green  : { main_color: '#339933', sub_color: '#99cc00' },
-  magenta: { main_color: '#993399', sub_color: '#cc66cc' },
-  navy   : { main_color: '#333399', sub_color: '#9999cc' },
-  red    : { main_color: '#cc3333', sub_color: '#ff9999' },
+  default : { main_color: '#414141', sub_color: '#efefef' },
+  blue    : { main_color: '#3333cc', sub_color: '#9999ff' },
+  brown   : { main_color: '#990000', sub_color: '#cc6633' },
+  cyan    : { main_color: '#00cccc', sub_color: '#99cccc' },
+  green   : { main_color: '#339933', sub_color: '#99cc00' },
+  magenta : { main_color: '#993399', sub_color: '#cc66cc' },
+  navy    : { main_color: '#333399', sub_color: '#9999cc' },
+  red     : { main_color: '#cc3333', sub_color: '#ff9999' },
 };
 
 //---------------------------------------------------------------------------
@@ -1248,7 +1107,7 @@ Config.Util = {
       patterns.push(new RegExp(lines[i], opts));
     }
     return patterns;
-  },
+  }
 };
 
 //---------------------------------------------------------------------------
