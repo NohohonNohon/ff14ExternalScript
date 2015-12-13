@@ -265,7 +265,8 @@
                 window.open('about:blank','_self').close();
             } else if(e.originalEvent.data == CANCEL_MSG) {
                 //ページ遷移時画面を閉じる
-                $(window).on('beforeunload', function() {window.open('about:blank','_self').close();});
+                //留意事項：Chromeでタブが一つしかない状態の場合失敗する
+                $(window).on('beforeunload', function() {window.open('about:blank','_self').close();window.close();});
             }
         }
         
