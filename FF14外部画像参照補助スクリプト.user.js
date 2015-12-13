@@ -5,7 +5,7 @@
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/blog/post/*
 // @include     https://picasaweb.google.com/*
 // @include     https://docs.google.com/picker?protocol=iframes*
-// @version     1.1.0
+// @version     1.1.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -71,14 +71,14 @@
             setTimeout(function loop(){
                 try {
                     if(FF14.target_window.closed == false){
-                        setTimeout(loop,1000);
+                        setTimeout(loop,100);
                     } else {
                         FF14.setImgDataURL();
                     }
                 } catch(err) {
                     FF14.setImgDataURL();
                 }
-            },1000);
+            },100);
         };
         
         var gloabl = {
@@ -233,17 +233,13 @@
         */
         function getNewImgCount() {
             //アップロードフラグの確認
-            console.log('TEST');
             if(settings.upload_flag == UPLOAD_FLAG.false) {
-                console.log('TEST2');
                 var count;
                 while (count == null){
-                    console.log('TEST3');
                     count = window.prompt('新着画像URL取得枚数を入力してください。(1から10までの数値)', '');
-                    console.log(count);
                     if(count == null) {
                         alert('新着画像URL取得をキャンセルします。');
-                        window.close();
+                        window.open('about:blank','_self').close();
                         break;
                     }
                     if(count.match(/[^0-9]+/)){
@@ -266,10 +262,10 @@
         */
         function closeWindow(e) {
             if(e.originalEvent.data == EXIT_MSG) {
-                window.close();
+                window.open('about:blank','_self').close();
             } else if(e.originalEvent.data == CANCEL_MSG) {
                 //ページ遷移時画面を閉じる
-                $(window).on('beforeunload', function() {window.close();});
+                $(window).on('beforeunload', function() {window.open('about:blank','_self').close();});
             }
         }
         
