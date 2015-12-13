@@ -47,11 +47,6 @@
         * @param {event} イベント
         */
         function clickEmbedBtn(e) {
-            //外部参照欄を非表示にする
-            if($('#add_hidden_area')[0] == null) {
-                var hidden_area = $('#external_file_uri').parents('.hidden_area');
-                hidden_area.wrapAll("<div id='add_hidden_area' style='display: none;'></div>");
-            }
             //アップロードサイトを表示する
             if (settings.upload_URL == '') {
                 alert('アップロードの設定をしてください。');
