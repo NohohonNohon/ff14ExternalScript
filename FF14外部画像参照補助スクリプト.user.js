@@ -31,6 +31,8 @@
         var OPEN_WINDOW_TYPE = {popup:'ポップアップ',tab:'新規タブ'};
         /** 画像のアップロード有無 */
         var UPLOAD_FLAG = {true:'画像をアップロードする',false:'画像をアップロードしない'};
+        /** 開いた画面を閉じるpostMessage */
+        var CLOSE_WINDOW = 'close_window';
 
     //共通変数
         /** 設定値 */
@@ -67,6 +69,7 @@
             } else if(settings.open_type ==  OPEN_WINDOW_TYPE.tab) {
                 FF14.target_window= window.open(settings.upload_URL,UPLOAD_WINDOW_NAME,'');
             }
+            $(window).on('message', closeWindow);
             //開いた画面が閉じるのを監視する。
             setTimeout(function loop(){
                 try {
@@ -81,7 +84,21 @@
             },100);
         };
         
+        /** 
+        * 子ページの要求により、画面を閉じる
+        * @param {event} イベント
+        */
+        function closeWindow(e) {
+            if(e.originalEvent.data == CLOSE_WINDOW) {
+                FF14.target_window.close();
+                $(window).off('message', closeWindow);
+            } else {
+                return true;
+            }
+        }
+        
         var gloabl = {
+            /** アップロード画面のウィンドウオブジェクト */
             target_window:'',
             
             /**
@@ -239,7 +256,7 @@
                     count = window.prompt('新着画像URL取得枚数を入力してください。(1から10までの数値)', '');
                     if(count == null) {
                         alert('新着画像URL取得をキャンセルします。');
-                        window.open('about:blank','_self').close();
+                        window.opener.postMessage(CLOSE_WINDOW, 'http://jp.finalfantasyxiv.com');
                         break;
                     }
                     if(count.match(/[^0-9]+/)){
@@ -262,11 +279,10 @@
         */
         function closeWindow(e) {
             if(e.originalEvent.data == EXIT_MSG) {
-                window.open('about:blank','_self').close();
+                window.opener.postMessage(CLOSE_WINDOW, 'http://jp.finalfantasyxiv.com');
             } else if(e.originalEvent.data == CANCEL_MSG) {
                 //ページ遷移時画面を閉じる
-                //留意事項：Chromeでタブが一つしかない状態の場合失敗する
-                $(window).on('beforeunload', function() {window.open('about:blank','_self').close();window.close();});
+                $(window).on('beforeunload', function() {window.opener.postMessage(CLOSE_WINDOW, 'http://jp.finalfantasyxiv.com');});
             }
         }
         
