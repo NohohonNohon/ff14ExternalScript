@@ -34,8 +34,7 @@ FF14のロードストーンで外部画像参照機能を使うときに、
 
 2. 画像をアップロードするアルバムを開きます。  
 ※アルバムの公開設定は「ウェブ上で一般公開」に設定してください。  
-![album_public1](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/album_public1.jpg)  
-![album_public2](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/album_public2.jpg)  
+![album_public1](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/album_public1.jpg) ![album_public2](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/album_public2.jpg)
 
 2. [写真を追加]をクリックします。  
 ![photo_add](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/photo_add.jpg)  
@@ -47,8 +46,8 @@ FF14のロードストーンで外部画像参照機能を使うときに、
 ![new_blog](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/new_blog.jpg)  
 
 5. スクリプトのコンフィグ画面を開きます。  
-![config_firefox](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/config_firefox.jpg)  
-![config_chrome](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/config_chrome.jpg)  
+![config_firefox](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/config_firefox.jpg)
+![config_chrome](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/config_chrome.jpg)
 
 6. アップロード画面URLにコピーしたURLを貼り付けます。
 
