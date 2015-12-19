@@ -31,12 +31,16 @@
         var OPEN_WINDOW_TYPE = {popup:'ポップアップ',tab:'新規タブ'};
         /** 画像のアップロード有無 */
         var UPLOAD_FLAG = {true:'画像をアップロードする',false:'画像をアップロードしない'};
+        /** URL入力欄表示有無 */
+        var HIDDEN_INPUT = {true:'非表示にする',false:'非表示にしない'};
+        /** URL自動登録有無 */
+        var UPLOAD_AUTO = {true:'アップロードする',false:'アップロードしない'};        
         /** 開いた画面を閉じるpostMessage */
         var CLOSE_WINDOW = 'close_window';
 
     //共通変数
         /** 設定値 */
-        var settings = {upload_URL:'',user_ID:'',album_ID:'',open_type:'',popup_width:'',popup_height:'',upload_flag:''};
+        var settings = {upload_URL:'',user_ID:'',album_ID:'',open_type:'',popup_width:'',popup_height:'',upload_flag:'',hidden_input:'',upload_auto:''};
     
     
     //==================================================
@@ -50,10 +54,10 @@
         */
         function clickEmbedBtn(e) {
             //外部参照欄を非表示にする
-            //if($('#add_hidden_area')[0] == null) {
-            //    var hidden_area = $('#external_file_uri').parents('.hidden_area');
-            //    hidden_area.wrapAll("<div id='add_hidden_area' style='display: none;'></div>");
-            //}
+            if(settings.hidden_input == HIDDEN_INPUT.true && $('#add_hidden_area')[0] == null) {
+                var hidden_area = $('#external_file_uri').parents('.hidden_area');
+                hidden_area.wrapAll("<div id='add_hidden_area' style='display: none;'></div>");
+            }
             //アップロードサイトを表示する
             if (settings.upload_URL == '') {
                 alert('アップロードの設定をしてください。');
@@ -128,7 +132,9 @@
                     $('#external_file_select').click();
                 }
                 //登録と同時にアップロードする
-                //$('#uploadfiles')[0].click();
+                if(settings.upload_auto == UPLOAD_AUTO.true) {
+                    $('#uploadfiles')[0].click();
+                }
                 return true;
             }
         };
@@ -361,9 +367,17 @@
                 '画像をアップロードする',
                 '画像をアップロードしない'
             ];  
+            var hidden_input = [
+                '非表示にする',
+                '非表示にしない'
+            ];  
+            var upload_auto = [
+                'アップロードする',
+                'アップロードしない'
+            ];  
             dialog(
                     'コンフィグ',
-                    { width: 500, height: 500 },
+                    { width: 600, height: 550 },
                     section(
                             'アップロード',
                             'アップロードに関する設定をします。',
@@ -371,7 +385,9 @@
                                 text('アップロード画面URL:', 'upload_URL', '', { size: 40 }), '\n',
                                 text('ユーザID:', 'user_ID', '', { size: 40 }), '\n',
                                 text('アルバムID:', 'album_ID', '', { size: 40 }), '\n',
-                                select('画像アップロード有無', 'upload_flag', upload_flag, '画像をアップロードする')
+                                select('画像アップロード有無', 'upload_flag', upload_flag, '画像をアップロードする'), '\n',
+                                select('URL入力欄を非表示にする', 'hidden_input', hidden_input, '非表示にしない'), '\n',
+                                select('URL登録と同時にアップロード', 'upload_auto', upload_auto, 'アップロードしない')
                             )
                     ),
                     section(
