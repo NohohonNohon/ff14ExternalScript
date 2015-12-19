@@ -449,7 +449,9 @@
         */
         function setExternalFlag(e) {
             var URL = $(e.target).val();
-            $(e.target).val(URL + UPLOAD_WINDOW_QUERY);
+            if(URL != '') {
+                $(e.target).val(URL + UPLOAD_WINDOW_QUERY);
+            }
         };
     })();
     
