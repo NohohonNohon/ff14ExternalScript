@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name        FF14外部画像参照補助スクリプト
 // @namespace   nohohon
+// @author      nohohon
 // @description FF14の外部画像参照機能を使って外部画像を楽に登録できるようにするスクリプト
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/blog/post/*
 // @include     https://picasaweb.google.com/*
@@ -91,7 +92,7 @@
                     FF14.setImgDataURL();
                 }
             },100);
-        };
+        }
         
         /** 
         * 子ページの要求により、画面を閉じる
@@ -106,7 +107,7 @@
             }
         }
         
-        var gloabl = {
+        var global = {
             /** アップロード画面のウィンドウオブジェクト */
             target_window:'',
             
@@ -138,7 +139,7 @@
                 return true;
             }
         };
-        return gloabl;
+        return global;
     })();
     
     
@@ -164,7 +165,7 @@
                 return false;
             }
             getNewImg();
-        };
+        }
         
         /** 
         * キャンセルボタンクリック時、画面を閉じるようにする
@@ -172,7 +173,7 @@
         */
         function clickCancelBtn(e) {
             window.parent.postMessage(CANCEL_MSG, 'https://picasaweb.google.com');
-        };
+        }
         
         /** 
         * img_upload_countに指定した枚数分の新着画像のURLを取得し、画面を閉じる
@@ -222,7 +223,7 @@
                     alert('接続がタイムアウトしました。');
                 }
             });
-        };
+        }
         
         /** 
         * アルバムの公開状態を確認する
@@ -256,7 +257,7 @@
                     console.log('checkAlbumPublic() is Timout');
                 }
             });
-        };
+        }
         
         /** 
         * 画像をアップロードしない設定の場合、枚数を指定して新着画像URLを取得する
@@ -440,8 +441,7 @@
             } catch(err) {
                 console.log(err);
             }
-
-        };
+        }
         
         /** 
         * アップロード画面URLに外部画像参照であることを示すクエリ文字列を付与する
@@ -452,7 +452,7 @@
             if(URL != '') {
                 $(e.target).val(URL + UPLOAD_WINDOW_QUERY);
             }
-        };
+        }
     })();
     
     //==================================================
