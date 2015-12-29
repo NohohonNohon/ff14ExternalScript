@@ -3,10 +3,10 @@
 // @namespace   nohohon
 // @author      nohohon
 // @description FF14の外部画像参照機能を使って外部画像を楽に登録できるようにするスクリプト
-// @include     http://jp.finalfantasyxiv.com/lodestone/my/blog/post/*
+// @include     http://jp.finalfantasyxiv.com/lodestone/my/blog/*
 // @include     https://picasaweb.google.com/*
 // @include     https://docs.google.com/picker?protocol=iframes*
-// @version     1.1.1
+// @version     1.1.2
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
