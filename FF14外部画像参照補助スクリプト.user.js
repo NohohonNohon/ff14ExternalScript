@@ -11,9 +11,9 @@
 // @grant       GM_log
 // @grant       GM_registerMenuCommand
 // @grant       GM_getResourceText
-// @resource    usconfigcss https://raw.github.com/NohohonNohon/ff14ExternalScript/master/usconfig.css.template
+// @resource    usconfigcss https://cdn.rawgit.com/NohohonNohon/ff14ExternalScript/master/usconfig.css.template
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
-// @require     https://raw.github.com/NohohonNohon/ff14ExternalScript/master/usconfig.js
+// @require     https://cdn.rawgit.com/NohohonNohon/ff14ExternalScript/master/usconfig.js
 // ==/UserScript==
 (function($) {
     //共通定数
