@@ -125,6 +125,11 @@
         */
         function afterImageWindow(docData) {
             var img_array = [];
+            //最大数を超えた場合処理を中止する
+            if(docData.length > 10) {
+                alert('一度に登録できる画像の枚数は10枚です。');
+                return;
+            }
             for (var i = 0, len = docData.length; i < len; i++) {
                 var img_url = docData[i].thumbnails[0].url;
                 img_url = img_url.replace(/\/s32-c\//g , '/s2048/');
