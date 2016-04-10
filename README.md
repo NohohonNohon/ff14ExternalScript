@@ -5,7 +5,7 @@ FF14のロードストーンで外部画像参照機能を簡単に行うため�
 ## 説明
 
 FF14のロードストーンで外部画像参照機能を使うときに、  
-外部サービス（Picasa）でアップロードした画像のURL取得、登録する手間を省くことができます。
+外部サービス（Googleフォト）でアップロードした画像のURL取得、登録する手間を省くことができます。
 
 ***デモ:***
 
@@ -29,32 +29,18 @@ FF14のロードストーンで外部画像参照機能を使うときに、
 
 ## 使用方法
 
-1. 外部サービス（Picasa）にログインします。  
-※ログインした状態でないと正常に動作しません。  
+インストールした直後からデモの様に外部画像参照機能を使うことが出来ます。  
+ここではスクリプトの設定を変える方法について以下に記載します。
 
-2. 画像をアップロードするアルバムを開きます。  
-※アルバムの公開設定は「ウェブ上で一般公開」に設定してください。  
-![album_public1](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/album_public1.jpg) ![album_public2](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/album_public2.jpg)
-
-2. [写真を追加]をクリックします。  
-![photo_add](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/photo_add.jpg)  
-
-3. アップロード画面のURLをコピーします。  
-![url_copy](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/url_copy.jpg)  
-
-4. FF14ロードストーンの新規日記作成画面を開きます。
+1. FF14ロードストーンの新規日記作成画面を開きます。
 ![new_blog](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/new_blog.jpg)  
 
-5. スクリプトのコンフィグ画面を開きます。  
+2. スクリプトのコンフィグ画面を開きます。  
 ![config_firefox](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/config_firefox.jpg)
 ![config_chrome](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/config_chrome.jpg)
 
-6. アップロード画面URLにコピーしたURLを貼り付けます。
-
-7. その他設定をしたら、[保存]ボタンをクリックします。  
+3. 設定を変更したら、[保存]ボタンをクリックして設定を保存します。
 ![config](https://raw.github.com/NohohonNohon/ff14ExternalScript/master/data/config.jpg)  
-
-8. デモの様に外部画像参照機能を使うことができます。
 
 ## 問い合わせ
 
