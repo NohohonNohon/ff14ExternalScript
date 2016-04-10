@@ -16,7 +16,7 @@ var GooglePicker = (function() {
     /** 
     * Picker API認証処理
     */
-    function loadAuthApi(immediate) {
+    function authorizeApi(immediate) {
         gapi.auth.authorize(
             {
                 'client_id': CLIENT_ID,
@@ -37,9 +37,9 @@ var GooglePicker = (function() {
     }
 
     /** 
-    * Picker API読み込み処理
+    * Picker API読み込み処理完了
     */
-    function loadPickerApi() {
+    function onloadPickerApi() {
         pickerApiLoaded = true;
     }
 
@@ -50,7 +50,7 @@ var GooglePicker = (function() {
         var url = 'nothing';
         if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
             var doc = data[google.picker.Response.DOCUMENTS];
-            console.log(doc);
+            //docデータからのURL抜き出し、登録などはメインスクリプトで行う
             window.postMessage([PICKED_IMAGE_MSG,doc], 'http://jp.finalfantasyxiv.com');
         }
     }
@@ -77,7 +77,7 @@ var GooglePicker = (function() {
             $('.picker-dialog').css('z-index', '10010');
         } else {
             //認証ダイアログを表示する
-            loadAuthApi(false);
+            authorizeApi(false);
         }
     }
     var global = {
@@ -86,8 +86,8 @@ var GooglePicker = (function() {
          * Google APIの関連処理の初期処理
          */
         initGoogleAPI: function() {
-            gapi.load('auth', {'callback': loadAuthApi(true)});
-            gapi.load('picker', {'callback': loadPickerApi});
+            gapi.load('auth', {'callback': authorizeApi(true)});
+            gapi.load('picker', {'callback': onloadPickerApi});
             $('#embedfiles').on('click',createPicker);
         },
         
@@ -108,4 +108,5 @@ function onLoadGoogleAPI() {
     GooglePicker.initGoogleAPI();
 }
 
+//スクリプトロード完了
 GooglePicker.sendLoadComplete();
