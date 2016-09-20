@@ -4,7 +4,7 @@
 // @author      nohohon
 // @description FF14の外部画像参照機能を使って外部画像を楽に登録できるようにするスクリプト
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/blog/*
-// @version     1.2.0
+// @version     1.2.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -150,7 +150,7 @@
                 $(window).on('message', callPostMessageFunction);
                 //GooglePickerを使うための関数をページに出力する
                 $('<script>')
-                    .attr('src', 'https://cdn.rawgit.com/NohohonNohon/ff14ExternalScript/master/GooglePicker.js')
+                    .attr('src', 'https://cdn.rawgit.com/NohohonNohon/ff14ExternalScript/v1.2.1/GooglePicker.js')
                     .appendTo('head');
                 //スクリプト読み込み後SCRIPT_LOAD_MSGがPostMessageされる
             }
