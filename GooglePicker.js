@@ -10,30 +10,19 @@ var GooglePicker = (function() {
     var CLIENT_ID = '240421965790-adpmb77subvkj231pt3dvolnicjmqfhg.apps.googleusercontent.com';
     var SCOPE = ['https://www.googleapis.com/auth/photos'];
 
-    var oauthToken = undefined;
     var pickerApiLoaded = false;
     
     /** 
     * Picker API認証処理
     */
-    function authorizeApi(immediate) {
+    function authorizeApi(immediate, callback) {
         gapi.auth.authorize(
             {
                 'client_id': CLIENT_ID,
                 'scope': SCOPE,
                 'immediate': immediate
             },
-        handleAuthResult);
-    }
-
-    /** 
-    * Picker API認証終了処理
-    * @param {auth} 認証情報
-    */
-    function handleAuthResult(authResult) {
-        if (authResult && !authResult.error) {
-            oauthToken = authResult.access_token;
-        }
+        callback);
     }
 
     /** 
@@ -59,7 +48,9 @@ var GooglePicker = (function() {
     * 画像選択画面を表示する
     */
     function createPicker() {
-        if (pickerApiLoaded && oauthToken) {
+        var token = gapi.auth.getToken();
+        if (pickerApiLoaded && token) {
+            var accessToken = gapi.auth.getToken().access_token;
             var picker = new google.picker.PickerBuilder()
                 .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
                 .addView(google.picker.ViewId.PHOTOS)
@@ -67,7 +58,7 @@ var GooglePicker = (function() {
                 .addView(google.picker.ViewId.PHOTO_UPLOAD)
                 .setLocale('ja')
                 .setCallback(pickerCallback)
-                .setOAuthToken(oauthToken)
+                .setOAuthToken(accessToken)
                 .setDeveloperKey(API_KEY)
                 .build();
             picker.setVisible(true);
@@ -77,7 +68,7 @@ var GooglePicker = (function() {
             $('.picker-dialog').css('z-index', '10010');
         } else {
             //認証ダイアログを表示する
-            authorizeApi(false);
+            authorizeApi(true,createPicker);
         }
     }
     var global = {
