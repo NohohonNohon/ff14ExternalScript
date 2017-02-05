@@ -51,6 +51,3 @@ FF14のロードストーンで外部画像参照機能を使うときに、
 
 Nohohon
 
-## ライセンス
-
-[MIT](http://b4b4r07.mit-license.org)
