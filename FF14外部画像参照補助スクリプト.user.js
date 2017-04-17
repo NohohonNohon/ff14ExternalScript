@@ -4,7 +4,7 @@
 // @author      nohohon
 // @description FF14の外部画像参照機能を使って外部画像を楽に登録できるようにするスクリプト
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/blog/*
-// @version     1.2.1
+// @version     1.2.2
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -42,8 +42,8 @@
         function clickEmbedBtn(e) {
             //外部参照欄を非表示にする
             if(settings.hidden_input == HIDDEN_INPUT.true && $('#add_hidden_area')[0] == null) {
-                var hidden_area = $('#external_file_uri').parents('.hidden_area');
-                hidden_area.wrapAll("<div id='add_hidden_area' style='display: none;'></div>");
+                $('#external_file_uri').wrapAll("<div id='add_hidden_area' style='display: none;'></div>");
+                $('#external_file_select').wrapAll("<div id='add_hidden_area' style='display: none;'></div>");
             }
             //GooglePicker.js側でクリックイベントをバインド
             //unsafeWindow.createPicker();
@@ -74,7 +74,7 @@
                 }
                 //登録と同時にアップロードする
                 if(settings.upload_auto == UPLOAD_AUTO.true) {
-                    $('#uploadfiles')[0].click();
+                    $('.sys_upload_execute')[0].click();
                 }
                 return true;
             }
