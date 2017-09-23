@@ -86,7 +86,7 @@ var GooglePicker = (function() {
          * スクリプトロード完了通知
          */
         sendLoadComplete: function() {
-            window.postMessage([SCRIPT_LOAD_MSG,''], 'http://jp.finalfantasyxiv.com');
+            window.postMessage([SCRIPT_LOAD_MSG,''], 'https://jp.finalfantasyxiv.com');
         }
     };
     return global;
