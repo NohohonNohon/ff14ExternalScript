@@ -9,6 +9,7 @@ var GooglePicker = (function() {
     var API_KEY = 'AIzaSyAqsQs8Saz2cWjL5zXvIw3UeTX38MUDbYs';
     var CLIENT_ID = '240421965790-adpmb77subvkj231pt3dvolnicjmqfhg.apps.googleusercontent.com';
     var SCOPE = ['https://www.googleapis.com/auth/photos'];
+    var TARGET_URL = location.protocol + '//' + location.hostname;
 
     var pickerApiLoaded = false;
     
@@ -40,7 +41,7 @@ var GooglePicker = (function() {
         if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
             var doc = data[google.picker.Response.DOCUMENTS];
             //docデータからのURL抜き出し、登録などはメインスクリプトで行う
-            window.postMessage([PICKED_IMAGE_MSG,doc], 'https://jp.finalfantasyxiv.com');
+            window.postMessage([PICKED_IMAGE_MSG,doc], TARGET_URL);
         }
     }
 
@@ -60,7 +61,6 @@ var GooglePicker = (function() {
                 .setCallback(pickerCallback)
                 .setOAuthToken(accessToken)
                 .setDeveloperKey(API_KEY)
-                .setOrigin('https://jp.finalfantasyxiv.com')
                 .build();
             picker.setVisible(true);
             
@@ -87,7 +87,7 @@ var GooglePicker = (function() {
          * スクリプトロード完了通知
          */
         sendLoadComplete: function() {
-            window.postMessage([SCRIPT_LOAD_MSG,''], 'https://jp.finalfantasyxiv.com');
+            window.postMessage([SCRIPT_LOAD_MSG,''], TARGET_URL);
         }
     };
     return global;
