@@ -40,7 +40,7 @@ var GooglePicker = (function() {
         if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
             var doc = data[google.picker.Response.DOCUMENTS];
             //docデータからのURL抜き出し、登録などはメインスクリプトで行う
-            window.postMessage([PICKED_IMAGE_MSG,doc], 'http://jp.finalfantasyxiv.com');
+            window.postMessage([PICKED_IMAGE_MSG,doc], 'https://jp.finalfantasyxiv.com');
         }
     }
 
