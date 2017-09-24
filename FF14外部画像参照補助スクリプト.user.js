@@ -7,7 +7,11 @@
 // @include     https://jp.finalfantasyxiv.com/lodestone/my/image/*
 // @include     https://jp.finalfantasyxiv.com/lodestone/my/event/post/*
 // @include     https://jp.finalfantasyxiv.com/lodestone/freecompany/*
-// @version     1.2.4
+// @include     http://jp.finalfantasyxiv.com/lodestone/my/blog/*
+// @include     http://jp.finalfantasyxiv.com/lodestone/my/image/*
+// @include     http://jp.finalfantasyxiv.com/lodestone/my/event/post/*
+// @include     http://jp.finalfantasyxiv.com/lodestone/freecompany/*
+// @version     1.2.5
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -153,7 +157,7 @@
                 $(window).on('message', callPostMessageFunction);
                 //GooglePickerを使うための関数をページに出力する
                 $('<script>')
-                    .attr('src', 'https://cdn.rawgit.com/NohohonNohon/ff14ExternalScript/v1.2.4/GooglePicker.js')
+                    .attr('src', 'https://cdn.rawgit.com/NohohonNohon/ff14ExternalScript/v1.2.6/GooglePicker.js')
                     .appendTo('head');
                 //スクリプト読み込み後SCRIPT_LOAD_MSGがPostMessageされる
             }
