@@ -69,7 +69,7 @@ var GooglePicker = (function() {
             $('.picker-dialog').css('z-index', '10010');
         } else {
             //認証ダイアログを表示する
-            authorizeApi(true,createPicker);
+            authorizeApi(false,createPicker);
         }
     }
     var global = {
