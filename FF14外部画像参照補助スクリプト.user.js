@@ -11,7 +11,7 @@
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/image/*
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/event/post/*
 // @include     http://jp.finalfantasyxiv.com/lodestone/freecompany/*
-// @version     1.3.0
+// @version     1.3.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
