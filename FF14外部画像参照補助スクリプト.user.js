@@ -11,7 +11,7 @@
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/image/*
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/event/post/*
 // @include     http://jp.finalfantasyxiv.com/lodestone/freecompany/*
-// @version     1.2.5
+// @version     1.3.0
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -35,6 +35,8 @@
     //共通変数
         /** 設定値 */
         var settings = {hidden_input:'',upload_auto:''};
+        /** サブウインドウオブジェクト*/
+    　　var winObj = null;
     
     
     //==================================================
@@ -52,8 +54,35 @@
                 $('#external_file_uri').wrapAll("<div id='add_hidden_area' style='display: none;'></div>");
                 $('#external_file_select').wrapAll("<div id='add_hidden_area' style='display: none;'></div>");
             }
-            //GooglePicker.js側でクリックイベントをバインド
-            //unsafeWindow.createPicker();
+            // Googleドライブ連携ページを新規ウィンドウで表示する
+            const subw = 600;// サブウインドウの横幅
+            const subh = 600;// サブウインドウの高さ
+            const subp = 'https://ff14chocopad.com/static/app/ff14-external-photo/jp/google-script.html';// 表示するページ(URL)
+            const subn = 'google-script';// サブウインドウの名称
+            // 表示座標の計算
+            const subx = ( screen.availWidth - subw ) / 2;// X座標
+            const suby = ( screen.availHeight - subh ) / 2;// Y座標
+            const features = `width=${subw},height=${subh},top=${suby},left=${subx},menubar=no,location=no,resizable=no,scrollbars=no,status=no`;
+            winObj = window.open(subp,subn,features);
+        }
+
+        /**
+        * サブウィンドウを閉じる
+        */
+        function closeWindow() {
+            if( (winObj) && (!winObj.closed) ){ //サブウインドウが開かれているか？
+                winObj.close(); //サブウインドウを閉じる
+            }
+            winObj = null;
+        }
+
+        /**
+        * サブウィンドウをフォーカスする
+        */
+        function focusWindow() {
+            if( (winObj) && (!winObj.closed) ){ //サブウインドウが開かれているか？
+                winObj.focus(); //サブウインドウをフォーカスする
+            }
         }
         
         var global = {
@@ -63,6 +92,9 @@
              */
             init: function() {
                 $('#embedfiles').on('click',clickEmbedBtn);
+                $('#select_box').on('click',closeWindow);
+                $('.sys_upload_close').on('click',closeWindow);
+                $(window).on('focus', focusWindow);
                 GM_registerMenuCommand('FF14外部画像参照補助(設定)', Config.open);
             },
             
@@ -95,7 +127,6 @@
     //==================================================
     var GooglePicker = (function() {
         
-        var SCRIPT_LOAD_MSG = 'GOOGLE_PICKER_SCRIPT_LOAD';
         var PICKED_IMAGE_MSG = 'GOOGLE_PICKER_PICKED_IMAGE';
         
         /** 
@@ -107,9 +138,7 @@
             if(!Array.isArray(data)) {
                 return;
             }
-            if(data[0] == SCRIPT_LOAD_MSG) {
-               loadGoogleAPIScript();
-            } else if(data[0] == PICKED_IMAGE_MSG) {
+            if(data[0] == PICKED_IMAGE_MSG) {
                 afterImageWindow(data[1]);
             }
         }
@@ -128,22 +157,16 @@
         
         /** 
         * Google Pickerの画像選択後の処理
-        * @param {docデータ} 
+        * @param {imgList}
         */
-        function afterImageWindow(docData) {
-            var img_array = [];
+        function afterImageWindow(imgList) {
             //最大数を超えた場合処理を中止する
-            if(docData.length > 10) {
+            if(imgList.length > 10) {
                 alert('一度に登録できる画像の枚数は10枚です。');
                 return;
             }
-            for (var i = 0, len = docData.length; i < len; i++) {
-                var img_url = docData[i].thumbnails[0].url;
-                img_url = img_url.replace(/\/s32-c\//g , '/s2048/');
-                img_array.push(img_url);
-            }
             //外部画像参照URLを登録する
-            GM_setValue(IMG_LIST_ARRAY,img_array);
+            GM_setValue(IMG_LIST_ARRAY,imgList);
             FF14.setImgDataURL();
         }
         
@@ -155,11 +178,6 @@
             init: function() {
                 //コールバック関数のためにPostMessageイベントを登録
                 $(window).on('message', callPostMessageFunction);
-                //GooglePickerを使うための関数をページに出力する
-                $('<script>')
-                    .attr('src', 'https://cdn.rawgit.com/NohohonNohon/ff14ExternalScript/v1.2.6/GooglePicker.js')
-                    .appendTo('head');
-                //スクリプト読み込み後SCRIPT_LOAD_MSGがPostMessageされる
             }
         };
         return global;
