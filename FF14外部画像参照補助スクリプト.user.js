@@ -11,7 +11,11 @@
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/image/*
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/event/post/*
 // @include     http://jp.finalfantasyxiv.com/lodestone/freecompany/*
+<<<<<<< HEAD
 // @version     1.3.0
+=======
+// @version     1.2.6
+>>>>>>> origin/master
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -178,6 +182,14 @@
             init: function() {
                 //コールバック関数のためにPostMessageイベントを登録
                 $(window).on('message', callPostMessageFunction);
+<<<<<<< HEAD
+=======
+                //GooglePickerを使うための関数をページに出力する
+                $('<script>')
+                    .attr('src', 'https://cdn.rawgit.com/NohohonNohon/ff14ExternalScript/v1.2.7/GooglePicker.js')
+                    .appendTo('head');
+                //スクリプト読み込み後SCRIPT_LOAD_MSGがPostMessageされる
+>>>>>>> origin/master
             }
         };
         return global;

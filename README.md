@@ -14,7 +14,7 @@ FF14のロードストーンで外部画像参照機能を使うときに、
 ## 対応ブラウザ
 
 - Firefox  
-※[Greasemonkey](https://addons.mozilla.org/ja/firefox/addon/greasemonkey/ "Greasemonkey :: Add-ons for Firefox")のインストールが必要です。
+※[Tampermonkey](https://addons.mozilla.org/ja/firefox/addon/tampermonkey/ "Tampermonkey – Firefox 向けアドオン")のインストールが必要です。
 - Chrome  
 ※[Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo "Tampermonkey - Chrome Web Store")のインストールが必要です。
 
@@ -30,6 +30,8 @@ FF14のロードストーンで外部画像参照機能を使うときに、
 ## 使用方法
 
 インストールした直後からデモの様に外部画像参照機能を使うことが出来ます。  
+ただし、Googleにログインしていない&アプリの認証をしていない場合、認証画面がポップアップで表示されるので、  
+ポップアップがブロックされた場合は許可してください。  
 ここではスクリプトの設定を変える方法について以下に記載します。
 
 1. FF14ロードストーンの新規日記作成画面を開きます。
