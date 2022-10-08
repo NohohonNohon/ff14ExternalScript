@@ -11,7 +11,7 @@
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/image/*
 // @include     http://jp.finalfantasyxiv.com/lodestone/my/event/post/*
 // @include     http://jp.finalfantasyxiv.com/lodestone/freecompany/*
-// @version     1.4.0
+// @version     1.4.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
@@ -105,7 +105,7 @@
                 $('#select_box').on('click',closeWindow);
                 $('.sys_upload_close').on('click',closeWindow);
                 $(window).on('focus', focusWindow);
-                GM_registerMenuCommand('FF14外部画像参照補助(設定)', Config.open);
+                GM_registerMenuCommand('FF14外部画像参照補助(設定)', FF14.openConfig);
             },
             
             /** 
@@ -126,6 +126,13 @@
                     $('.sys_upload_execute')[0].click();
                 }
                 return true;
+            },
+
+            /**
+            * 設定画面を開く
+            */
+            openConfig: function() {
+                Config.open();
             }
         };
         return global;
